@@ -1,0 +1,7 @@
+aiohttp
+aiosqlite
+asyncio
+discord.py
+pyyaml
+DateTime
+pytz

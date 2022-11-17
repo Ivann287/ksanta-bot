@@ -1,0 +1,7 @@
+TOKEN: 'REPLACE_WITH_TOKEN'
+channel_id: 123456
+prefix: 'k!'
+white_list:
+- 1
+- 2
+- 3
