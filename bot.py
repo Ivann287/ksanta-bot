@@ -125,18 +125,14 @@ async def on_message(message: discord.Message):
 
 
         # Remove duplicates
-        print(tag_list)
         tag_list = list(dict.fromkeys(tag_list))
-        print(tag_list)
+
 
         # Replace all tags in list with id tags
-
         for tag in tag_list:
             disc_idx = tag.find('#')
             name = tag[1:disc_idx]
             discriminator = tag[disc_idx+1:]
-
-            print(tag, name, discriminator)
 
             channel = client.get_channel(config['channel_id'])
             user = discord.utils.get(   channel.guild.members,
@@ -155,7 +151,11 @@ async def on_message(message: discord.Message):
     if len(message.attachments) < 1:
         log(message.content)
         message_to_send = replaceTags(message.content)
-        await target_channel.send(message_to_send)
+
+        try:
+            await target_channel.send(message_to_send)
+        except Exception:
+            return await message.add_reaction('❌')
 
 
     # If the message has attachments
@@ -183,8 +183,12 @@ async def on_message(message: discord.Message):
                 data = io.BytesIO(await resp.read())
                 image = discord.File(data, 'image.png')
                 message_to_send = replaceTags(message.content)
-                await target_channel.send(message_to_send, file=image)
 
+                try:
+                    await target_channel.send(message_to_send, file=image)
+                except Exception:
+                    return await message.add_reaction('❌')
+                    
 
     # If this is reached, the message was sent
     await message.add_reaction('✅')
