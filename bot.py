@@ -107,10 +107,55 @@ async def on_message(message: discord.Message):
         return await message.channel.send(embed=embed)
 
 
+    # Handle tags (I should just use regex)
+    def replaceTags(msg=str):
+
+        # Get list of tags in 'msg'
+        tag_list = []
+        for i in range(len(msg)):
+            if msg[i] == '@':
+
+                # Find discriminator ('#' after '@')
+                next_tag = msg.find('@', i+1)
+                disc_idx = msg.find('#', i+1)
+
+                # Check if '#' is before the next '@'
+                if disc_idx >= 0 and (disc_idx < next_tag or next_tag < 0):
+                    tag_list.append(msg[i:disc_idx+5])
+
+
+        # Remove duplicates
+        print(tag_list)
+        tag_list = list(dict.fromkeys(tag_list))
+        print(tag_list)
+
+        # Replace all tags in list with id tags
+
+        for tag in tag_list:
+            disc_idx = tag.find('#')
+            name = tag[1:disc_idx]
+            discriminator = tag[disc_idx+1:]
+
+            print(tag, name, discriminator)
+
+            channel = client.get_channel(config['channel_id'])
+            user = discord.utils.get(   channel.guild.members,
+                                        name=name,
+                                        discriminator=discriminator)
+
+            if user is not None:
+                old_tag = "@" + name + "#" + discriminator
+                new_tag = "<@" + str(user.id) + ">"
+                msg = msg.replace(old_tag, new_tag)
+
+        return msg
+
+
     # If the message has no attachments
     if len(message.attachments) < 1:
         log(message.content)
-        await target_channel.send(message.content)
+        message_to_send = replaceTags(message.content)
+        await target_channel.send(message_to_send)
 
 
     # If the message has attachments
@@ -137,7 +182,8 @@ async def on_message(message: discord.Message):
                 # Send message with attachment
                 data = io.BytesIO(await resp.read())
                 image = discord.File(data, 'image.png')
-                await target_channel.send(message.content, file=image)
+                message_to_send = replaceTags(message.content)
+                await target_channel.send(message_to_send, file=image)
 
 
     # If this is reached, the message was sent
